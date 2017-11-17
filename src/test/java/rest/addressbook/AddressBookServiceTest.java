@@ -305,7 +305,51 @@ public class AddressBookServiceTest {
 				.request(MediaType.APPLICATION_JSON).get();
 		assertEquals(404, response.getStatus());
 	}
+   
+   
+   @Test
+	public void head() throws IOException {
 
+		// Prepare server
+		AddressBook ab = new AddressBook();
+		Person salvador = new Person();
+		salvador.setName("Salvador");
+		salvador.setId(1);
+		Person juan = new Person();
+		juan.setName("Juan");
+		juan.setId(2);
+		ab.getPersonList().add(salvador);
+		ab.getPersonList().add(juan);
+		launchServer(ab);
+
+		// Get a person
+		Client client = ClientBuilder.newClient();
+		Response response1 = client
+				.target("http://localhost:8282/contacts/person/1")
+				.request(MediaType.APPLICATION_JSON).get();
+		assertEquals(200, response1.getStatus());
+            
+      // Head
+		Response response2 = client
+				.target("http://localhost:8282/contacts/person/1")
+				.request(MediaType.APPLICATION_JSON).head();
+		assertEquals(200, response2.getStatus());
+      assertEquals(response1.getHeaders(), response2.getHeaders());
+      
+      // Head
+		Response response3 = client
+				.target("http://localhost:8282/contacts/person/1")
+				.request(MediaType.APPLICATION_JSON).head();
+		assertEquals(200, response3.getStatus());
+      assertEquals(response2.getHeaders(), response3.getHeaders());
+
+		//////////////////////////////////////////////////////////////////////
+		// Verify that HEAD is well implemented by the service, i.e
+		// test that it is safe and idempotent
+		//////////////////////////////////////////////////////////////////////	
+	
+	}
+   
 	private void launchServer(AddressBook ab) throws IOException {
 		URI uri = UriBuilder.fromUri("http://localhost/").port(8282).build();
 		server = GrizzlyHttpServerFactory.createHttpServer(uri,
